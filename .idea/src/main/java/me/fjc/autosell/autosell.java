@@ -1,11 +1,14 @@
 package me.fjc.autosell;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.Command;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.List;
@@ -25,6 +28,12 @@ public class Autosell extends JavaPlugin implements Listener {
         saveDefaultConfig();
         reloadConfig();
         loadConfig();
+
+        if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            getLogger().info("Successfully linked up with PAPI.");
+        } else {
+            getLogger().warning("Uh oh! Could not find PAPI.");
+        }
     }
 
     @Override
@@ -74,6 +83,7 @@ public class Autosell extends JavaPlugin implements Listener {
                         }
 
                         String command = commands.get(index);
+                        command = usePlaceholder(player, command);
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
 
                         index = (index + 1) % commands.size();
@@ -106,4 +116,14 @@ public class Autosell extends JavaPlugin implements Listener {
         }
         return false;
     }
+    public String usePlaceholder(Player player, String placeholder) {
+        String result = PlaceholderAPI.setPlaceholders(player, placeholder);
+        return result != null ? result : "Placeholder was not found";
+    }
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (taskId != -1) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "autosell");
+        }
+    }
+
 }
