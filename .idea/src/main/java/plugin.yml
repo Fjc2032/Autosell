@@ -6,8 +6,9 @@ authors: [ Fjc ]
 description: Simple Java plugin that continously runs a command. Used by me for autosell but can be refactored for any command
 load: STARTUP
 
-softdepend:
+depend:
   - PlaceholderAPI
+softdepend:
   - EconomyShopGUI
   - EconomyShopGUI-Premium
   - Essentials
