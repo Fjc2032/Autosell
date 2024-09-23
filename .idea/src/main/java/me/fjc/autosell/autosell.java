@@ -30,9 +30,10 @@ public class Autosell extends JavaPlugin implements Listener {
         loadConfig();
 
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            getLogger().info("Successfully linked up with PAPI.");
+            getLogger().info("Successfully linked up with PAPI. Running version v1.14");
         } else {
-            getLogger().warning("Uh oh! Could not find PAPI.");
+            getLogger().warning("Uh oh! Could not find PAPI. Plugin disabling...");
+            getServer().getPluginManager().disablePlugin(this); //Disables the plugin if PlaceholderAPI is not detected.
         }
     }
 
@@ -40,6 +41,7 @@ public class Autosell extends JavaPlugin implements Listener {
     public void onDisable() {
         if (taskId != -1) {
             Bukkit.getScheduler().cancelTask(taskId); //This will stop any loop when the server stops so java doesn't start whining
+            getLogger().info("Plugin disabling...");
         }
         for (int taskId : playerTasks.values()) {
             Bukkit.getScheduler().cancelTask(taskId); //This will stop the loop when the player toggles the cmd
