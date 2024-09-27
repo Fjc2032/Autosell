@@ -122,9 +122,15 @@ public class Autosell extends JavaPlugin implements Listener {
         String result = PlaceholderAPI.setPlaceholders(player, placeholder);
         return result != null ? result : "Placeholder was not found";
     }
-    public void onPlayerQuit(PlayerQuitEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         if (taskId != -1) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "autosell");
+        }
+    }
+    public void onPlayerLeave(PlayerQuitEvent event) {
+        getLogger.warning("Warning: autosell loop still enabled! Shutting down to avoid problems.");
+        if (taskId != -1) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "autosellreload");
         }
     }
 
