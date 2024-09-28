@@ -32,7 +32,7 @@ public class Autosell extends JavaPlugin implements Listener {
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().info("Successfully linked up with PAPI. Running version v1.14");
         } else {
-            getLogger().warning("Uh oh! Could not find PAPI. Plugin disabling...");
+            getLogger().severe("Uh oh! Could not find PAPI. Plugin disabling...");
             getServer().getPluginManager().disablePlugin(this); //Disables the plugin if PlaceholderAPI is not detected.
         }
     }
