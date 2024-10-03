@@ -1,5 +1,5 @@
 name: AutosellLoop
-version: 1.14
+version: 1.16
 main: me.fjc.autosell.Autosell
 api-version: 1.20
 authors: [ Fjc ]
