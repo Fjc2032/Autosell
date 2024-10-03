@@ -4,7 +4,9 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.Command;
@@ -15,7 +17,7 @@ import java.util.List;
 
 public class Autosell extends JavaPlugin implements Listener {
     private List<String> commands;
-    private int taskId;
+    private int taskId = -1;
     private int interval;
     private int index = 0;
 
@@ -28,24 +30,27 @@ public class Autosell extends JavaPlugin implements Listener {
         saveDefaultConfig();
         reloadConfig();
         loadConfig();
+        getServer().getPluginManager().registerEvents(this, this);
 
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            getLogger().info("Successfully linked up with PAPI. Running version v1.14");
+            getLogger().info("Successfully linked up with PAPI.");
         } else {
-            getLogger().severe("Uh oh! Could not find PAPI. Plugin disabling...");
+            getLogger().severe("Uh oh! Could not find PAPI! Disabling plugin for safety measures!");
             getServer().getPluginManager().disablePlugin(this); //Disables the plugin if PlaceholderAPI is not detected.
+            return;
         }
+        getLogger().info("Autosell fully loaded. Great job!");
     }
 
     @Override
     public void onDisable() {
         if (taskId != -1) {
             Bukkit.getScheduler().cancelTask(taskId); //This will stop any loop when the server stops so java doesn't start whining
-            getLogger().info("Plugin disabling...");
         }
         for (int taskId : playerTasks.values()) {
             Bukkit.getScheduler().cancelTask(taskId); //This will stop the loop when the player toggles the cmd
         }
+        getLogger().info("Disabling plugin Autosell... goodnight");
     }
 
     private void loadConfig() {
@@ -75,6 +80,7 @@ public class Autosell extends JavaPlugin implements Listener {
             } else { //Starts a new loop if none is running
                 int taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
                     private int index = playerIndices.getOrDefault(player, 0);
+
 
                     @Override
                     public void run() {
@@ -118,19 +124,41 @@ public class Autosell extends JavaPlugin implements Listener {
         }
         return false;
     }
+
     public String usePlaceholder(Player player, String placeholder) {
         String result = PlaceholderAPI.setPlaceholders(player, placeholder);
         return result != null ? result : "Placeholder was not found";
     }
+
+    @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (taskId != -1) {
-            Bukkit.getScheduler().cancelTasks(this);
-        }
-    }
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        if (taskId != -1 ) {
-            Bukkit.getScheduler().cancelTasks(this);
+            Player player = event.getPlayer();
+            if (playerTasks.containsKey(player)) {
+                int taskId = playerTasks.get(player);
+                Bukkit.getScheduler().cancelTask(taskId);
+                playerTasks.remove(player);
+                playerIndices.remove(player);
+                player.sendMessage("Autosell process was terminated due to logout.");
+            }
+
         }
     }
 
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (taskId != -1) {
+            Player player = event.getPlayer();
+            if (playerTasks.containsKey(player)) {
+                int taskId = playerTasks.get(player);
+                Bukkit.getScheduler().cancelTask(taskId);
+                playerTasks.remove(player);
+                playerIndices.remove(player);
+                player.sendMessage("Previous autosell process terminated to prevent double looping. Thank me later.");
+                return;
+            }
+        }
+
+    }
 }
+
